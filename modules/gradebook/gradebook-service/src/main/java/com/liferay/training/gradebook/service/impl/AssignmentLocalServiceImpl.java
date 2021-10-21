@@ -13,6 +13,11 @@
  */
 package com.liferay.training.gradebook.service.impl;
 
+import java.util.Date;
+import java.util.List;
+
+import org.osgi.service.component.annotations.Component;
+
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.Disjunction;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -25,11 +30,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.training.gradebook.model.Assignment;
 import com.liferay.training.gradebook.service.base.AssignmentLocalServiceBaseImpl;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import org.osgi.service.component.annotations.Component;
 
 /**
  * The implementation of the assignment local service.
