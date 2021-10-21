@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.Disjunction;
@@ -30,6 +31,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.training.gradebook.model.Assignment;
 import com.liferay.training.gradebook.service.base.AssignmentLocalServiceBaseImpl;
+import com.liferay.training.gradebook.validator.AssignmentValidator;
 
 /**
  * The implementation of the assignment local service.
@@ -54,6 +56,10 @@ public class AssignmentLocalServiceImpl extends AssignmentLocalServiceBaseImpl {
 
 	public Assignment addAssignment(long groupId, String title, String description, Date dueDate,
 			ServiceContext serviceContext) throws PortalException {
+
+		// Validate assignment parameters.
+		_assignmentValidator.validate(title, description, dueDate);
+
 		// Get group and user.
 		Group group = groupLocalService.getGroup(groupId);
 		long userId = serviceContext.getUserId();
@@ -78,6 +84,10 @@ public class AssignmentLocalServiceImpl extends AssignmentLocalServiceBaseImpl {
 
 	public Assignment updateAssignment(long assignmentId, String title, String description, Date dueDate,
 			ServiceContext serviceContext) throws PortalException {
+
+		// Validate assignment parameters.
+		_assignmentValidator.validate(title, description, dueDate);
+
 		// Get the Assignment by id.
 		Assignment assignment = getAssignment(assignmentId);
 		// Set updated fields and modification date.
@@ -132,4 +142,8 @@ public class AssignmentLocalServiceImpl extends AssignmentLocalServiceBaseImpl {
 	public Assignment updateAssignment(Assignment assignment) {
 		throw new UnsupportedOperationException("Not supported.");
 	}
+
+	@Reference
+	AssignmentValidator _assignmentValidator;
+
 }

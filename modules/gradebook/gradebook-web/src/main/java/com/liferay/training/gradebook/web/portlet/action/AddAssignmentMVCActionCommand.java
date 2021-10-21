@@ -8,14 +8,14 @@ import javax.portlet.ActionResponse;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.training.gradebook.exception.AssignmentValidationException;
@@ -37,22 +37,32 @@ public class AddAssignmentMVCActionCommand extends BaseMVCActionCommand {
 		ThemeDisplay themeDisplay = (ThemeDisplay) actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(Assignment.class.getName(), actionRequest);
 		// Get parameters from the request.
-		String title = ParamUtil.getString(actionRequest, "title", StringPool.BLANK);
-		String description = ParamUtil.getString(actionRequest, "description", StringPool.BLANK);
-		Date dueDate = ParamUtil.getDate(actionRequest, "dueDate",
-				DateFormatFactoryUtil.getSimpleDateFormat("MM-dd-YYYY"));
+		String title = ParamUtil.getString(actionRequest, "title");
+
+		String description = ParamUtil.getString(actionRequest, "description", null);
+		Date dueDate = ParamUtil.getDate(actionRequest, "dueDate", null);
 		try {
 			// Call the service to add a new assignment.
 
 			_assignmentService.addAssignment(themeDisplay.getScopeGroupId(), title, description, dueDate,
 					serviceContext);
+
+			// Set the success message.
+			SessionMessages.add(actionRequest, "assignmentAdded");
 			sendRedirect(actionRequest, actionResponse);
 		} catch (AssignmentValidationException ave) {
+
+			// Get error messages from the service layer.
+			ave.getErrors().forEach(key -> SessionErrors.add(actionRequest, key));
 
 			ave.printStackTrace();
 			actionResponse.setRenderParameter("mvcRenderCommandName", MVCCommandNames.EDIT_ASSIGNMENT);
 		} catch (PortalException pe) {
+
+			// Set error messages from the service layer.
+			SessionErrors.add(actionRequest, "serviceErrorDetails", pe);
 			pe.printStackTrace();
+
 			actionResponse.setRenderParameter("mvcRenderCommandName", MVCCommandNames.EDIT_ASSIGNMENT);
 		}
 	}
